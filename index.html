@@ -166,10 +166,10 @@
           const parsed = JSON.parse(raw);
           data = parsed.data || [];
         } catch (e) {
-          data = raw.split(',').map(s => s.trim()).filter(Boolean);
+          data = raw.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean);
         }
       } else {
-        data = raw.split(',').map(s => s.trim()).filter(Boolean);
+        data = raw.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean);
       }
 
       btn.disabled = true;
