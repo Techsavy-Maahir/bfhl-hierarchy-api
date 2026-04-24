@@ -160,17 +160,13 @@
 
       if (!raw) return;
 
-      let data;
-      if (raw.startsWith('{')) {
-        try {
-          const parsed = JSON.parse(raw);
-          data = parsed.data || [];
-        } catch (e) {
-          data = raw.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean);
-        }
-      } else {
-        data = raw.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean);
-      }
+      // Robust splitting by newlines OR commas
+      const data = raw
+        .split(/[,\n\r]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      console.log('Sending data array:', data);
 
       btn.disabled = true;
       btn.textContent = 'Processing...';
