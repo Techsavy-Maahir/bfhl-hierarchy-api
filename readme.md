@@ -28,7 +28,7 @@ The server will be available at `http://localhost:3000`.
 
 Base URL:
 ```
-https://your-deployed-url.com
+https://bfhl-api-90c6.onrender.com
 ```
 
 Endpoint:
