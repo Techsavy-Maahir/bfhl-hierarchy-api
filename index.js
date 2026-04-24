@@ -8,6 +8,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 app.post('/bfhl', (req, res) => {
+    console.log('Received payload:', req.body);
     const { data } = req.body;
 
     if (!data || !Array.isArray(data)) {
