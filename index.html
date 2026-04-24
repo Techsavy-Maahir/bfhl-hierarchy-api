@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BFHL Hierarchy Processor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #60a5fa;
+      margin-bottom: 6px;
+    }
+
+    p.sub {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3452;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3452;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-family: 'Courier New', monospace;
+      padding: 14px;
+      resize: vertical;
+      min-height: 130px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #60a5fa; }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 13px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover { background: #2563eb; }
+    button:active { transform: scale(0.98); }
+    button:disabled { background: #334155; cursor: not-allowed; }
+
+    .response-card {
+      background: #1e2330;
+      border: 1px solid #2d3452;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .response-card h2 {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    pre {
+      background: #0f1117;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: #86efac;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .error pre { color: #f87171; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .badge.ok { background: #14532d; color: #86efac; }
+    .badge.err { background: #450a0a; color: #f87171; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>BFHL Hierarchy Processor</h1>
+  <p class="sub">POST /bfhl — Enter edge data below to process</p>
+
+  <div class="card">
+    <label>Edge Data (comma-separated)</label>
+    <textarea id="inputData" placeholder='e.g. A->B, A->C, B->D, X->Y, Y->Z, Z->X, hello'></textarea>
+    <button id="submitBtn" onclick="sendRequest()">Process Edges</button>
+  </div>
+
+  <div class="response-card hidden" id="responseSection">
+    <h2>Response</h2>
+    <span class="badge" id="statusBadge"></span>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/bfhl'
+      : 'https://your-app.onrender.com/bfhl'; // ← replace after deploy
+
+    async function sendRequest() {
+      const raw = document.getElementById('inputData').value.trim();
+      const btn = document.getElementById('submitBtn');
+      const section = document.getElementById('responseSection');
+      const output = document.getElementById('output');
+      const badge = document.getElementById('statusBadge');
+
+      if (!raw) return;
+
+      const data = raw.split(',').map(s => s.trim()).filter(Boolean);
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      section.classList.add('hidden');
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data })
+        });
+
+        const json = await res.json();
+        output.textContent = JSON.stringify(json, null, 2);
+        badge.textContent = `${res.status} OK`;
+        badge.className = 'badge ok';
+        section.className = 'response-card';
+      } catch (err) {
+        output.textContent = `Error: ${err.message}`;
+        badge.textContent = 'Failed';
+        badge.className = 'badge err';
+        section.className = 'response-card error';
+      } finally {
+        section.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Process Edges';
+      }
+    }
+  </script>
+
+</body>
+</html>
